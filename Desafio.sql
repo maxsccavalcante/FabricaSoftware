@@ -1,0 +1,139 @@
+USE desafio;
+
+CREATE TABLE REGIOES (
+    id_regiao INT NOT NULL AUTO_INCREMENT,
+    nome VARCHAR(50) NOT NULL,
+    estado VARCHAR(50) NOT NULL,
+    potencial_energetico DECIMAL(10,2) NOT NULL,
+    tipo_energia VARCHAR(50) NOT NULL,
+    
+    PRIMARY KEY (id_regiao)
+);
+
+CREATE TABLE USINAS (
+    id_usina INT NOT NULL AUTO_INCREMENT,
+    nome VARCHAR(100) NOT NULL,
+    capacidade_mw DECIMAL(10,2) NOT NULL,
+    tipo VARCHAR(50) NOT NULL,
+    cidade VARCHAR(50) NOT NULL,
+    id_regiao INT NOT NULL,
+
+    PRIMARY KEY (id_usina),
+
+    FOREIGN KEY (id_regiao)
+        REFERENCES REGIOES(id_regiao)
+);
+
+CREATE TABLE GERACAO (
+    id_geracao INT NOT NULL AUTO_INCREMENT,
+    data_geracao DATE NOT NULL,
+    energia_mwh DECIMAL(12,2) NOT NULL,
+    horas_operacao DECIMAL(8,2) NOT NULL,
+    observacao VARCHAR(150),
+    id_usina INT NOT NULL,
+
+    PRIMARY KEY (id_geracao),
+
+    FOREIGN KEY (id_usina)
+        REFERENCES USINAS(id_usina)
+);
+SHOW TABLES;
+
+INSERT INTO REGIOES 
+(nome, estado, potencial_energetico, tipo_energia)
+VALUES
+('Sudeste', 'São Paulo', 8500.00, 'Solar'),
+('Sul', 'Paraná', 7200.00, 'Hidrelétrica'),
+('Nordeste', 'Bahia', 12500.00, 'Eólica'),
+('Centro-Oeste', 'Goiás', 6800.00, 'Solar'),
+('Norte', 'Pará', 9300.00, 'Hidrelétrica'),
+('Sudeste', 'Minas Gerais', 10200.00, 'Solar'),
+('Sul', 'Santa Catarina', 5900.00, 'Hidrelétrica'),
+('Nordeste', 'Ceará', 11800.00, 'Eólica'),
+('Centro-Oeste', 'Mato Grosso', 7500.00, 'Biomassa'),
+('Norte', 'Amazonas', 6400.00, 'Biomassa');
+
+SELECT * FROM REGIOES;
+
+INSERT INTO USINAS
+(nome, capacidade_mw, tipo, cidade, id_regiao)
+VALUES
+('Usina Solar Horizonte', 500.00, 'Solar', 'Campinas', 1),
+('Usina Hidrelétrica Paraná', 850.00, 'Hidrelétrica', 'Foz do Iguaçu', 2),
+('Parque Eólico Bahia', 1200.00, 'Eólica', 'Juazeiro', 3),
+('Usina Solar Cerrado', 650.00, 'Solar', 'Goiânia', 4),
+('Usina Hidrelétrica Norte', 980.00, 'Hidrelétrica', 'Altamira', 5),
+('Usina Solar Minas', 720.00, 'Solar', 'Uberlândia', 6),
+('Usina Hidrelétrica Catarinense', 610.00, 'Hidrelétrica', 'Chapecó', 7),
+('Parque Eólico Ceará', 1350.00, 'Eólica', 'Fortaleza', 8),
+('Usina de Biomassa Mato Grosso', 540.00, 'Biomassa', 'Cuiabá', 9),
+('Usina de Biomassa Amazonas', 430.00, 'Biomassa', 'Manaus', 10);
+
+SELECT * FROM USINAS;
+SELECT nome FROM USINAS;
+SELECT id_regiao FROM USINAS;
+
+INSERT INTO GERACAO
+(data_geracao, energia_mwh, horas_operacao, observacao, id_usina)
+VALUES
+('2026-01-01', 4200.50, 720.00, 'Operação normal', 1),
+('2026-01-01', 6800.75, 700.00, 'Alta produção', 2),
+('2026-01-01', 9100.20, 710.00, 'Excelente desempenho', 3),
+('2026-01-01', 5300.40, 715.00, 'Operação normal', 4),
+('2026-01-01', 7600.80, 705.00, 'Operação normal', 5),
+('2026-01-01', 6100.30, 718.00, 'Boa incidência solar', 6),
+('2026-01-01', 4900.60, 690.00, 'Manutenção parcial', 7),
+('2026-01-01', 10200.90, 725.00, 'Produção elevada', 8),
+('2026-01-01', 4500.10, 680.00, 'Operação normal', 9),
+('2026-01-01', 3700.45, 670.00, 'Manutenção preventiva', 10);
+
+SELECT * FROM GERACAO;
+SELECT observacao FROM GERACAO;
+SELECT * FROM USINAS
+WHERE id_usina = 1; 
+
+UPDATE USINAS
+SET capacidade_mw = 550.00
+WHERE id_usina = 1;
+
+SELECT * FROM USINAS
+WHERE id_usina = 1; 
+SELECT nome, capacidade_mw, tipo FROM USINAS
+WHERE capacidade_mw > 500;
+SELECT * FROM USINAS
+WHERE capacidade_mw > 500;
+SELECT round (SUM(energia_mwh), 2) AS energia_total FROM GERACAO;
+SELECT round (avg(energia_mwh),2) AS media_geracao FROM GERACAO;
+SELECT round (MAX(energia_mwh),2) AS maior_geracao FROM GERACAO;
+SELECT id_usina, round (SUM(energia_mwh),2) AS total_gerado FROM GERACAO
+GROUP BY id_usina;
+SELECT id_usina, round (SUM(energia_mwh),2) AS total_gerado FROM GERACAO
+GROUP BY id_usina
+HAVING SUM(energia_mwh) > 5000;
+SELECT USINAS.nome AS usina, GERACAO.data_geracao, GERACAO.energia_mwh
+FROM USINAS
+JOIN GERACAO
+ON USINAS.id_usina = GERACAO.id_usina;
+SELECT REGIOES.nome AS regiao, USINAS.nome AS usina, GERACAO.energia_mwh
+FROM REGIOES
+JOIN USINAS
+ON REGIOES.id_regiao = USINAS.id_regiao
+JOIN GERACAO
+ON USINAS.id_usina = GERACAO.id_usina;
+
+#desafio:
+
+SELECT REGIOES.nome AS regiao, round(SUM(GERACAO.energia_mwh),2) AS geracao_total
+FROM REGIOES
+JOIN USINAS
+ON REGIOES.id_regiao = USINAS.id_regiao
+JOIN GERACAO
+ON USINAS.id_usina = GERACAO.id_usina
+GROUP BY REGIOES.nome
+ORDER BY geracao_total DESC
+LIMIT 1;
+
+
+
+
+
